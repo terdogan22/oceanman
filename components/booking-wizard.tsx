@@ -24,9 +24,7 @@ export function BookingWizard() {
   const [time, setTime] = useState("");
   const [customer, setCustomer] = useState<Customer>(initialCustomer);
   const [accepted, setAccepted] = useState(false);
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const [availabilityLoading, setAvailabilityLoading] = useState(false);
-  const [availabilityDemo, setAvailabilityDemo] = useState(false);
+  const [availability, setAvailability] = useState<{ key: string; slots: string[]; demo: boolean }>({ key: "", slots: [], demo: false });
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<BookingResponse | null>(null);
   const [error, setError] = useState("");
@@ -34,35 +32,30 @@ export function BookingWizard() {
   const filteredServices = services.filter((item) => item.category === category);
   const filteredStaff = staff.filter((item) => !service || item.services.includes(service.id));
   const canContinue = [Boolean(category), Boolean(service), Boolean(expert), Boolean(date && time)][step] ?? false;
+  const availabilityKey = step === 3 && service && expert && date
+    ? new URLSearchParams({ serviceId: service.id, staffId: expert.id, date }).toString()
+    : "";
+  const availabilityLoading = Boolean(availabilityKey && availability.key !== availabilityKey);
+  const availableSlots = availability.key === availabilityKey ? availability.slots : [];
+  const availabilityDemo = availability.key === availabilityKey && availability.demo;
 
   useEffect(() => {
-    if (step !== 3 || !service || !expert || !date) return;
+    if (!availabilityKey) return;
 
     const controller = new AbortController();
-    setAvailabilityLoading(true);
-    setAvailableSlots([]);
-    setAvailabilityDemo(false);
-    setTime("");
-    setError("");
-
-    const query = new URLSearchParams({ serviceId: service.id, staffId: expert.id, date });
-    fetch(`/api/availability?${query}`, { signal: controller.signal })
+    fetch(`/api/availability?${availabilityKey}`, { signal: controller.signal })
       .then(async (response) => {
         const data = (await response.json()) as { slots?: string[]; demo?: boolean; error?: string };
         if (!response.ok) throw new Error(data.error || "Uygun saatler alınamadı.");
-        setAvailableSlots(data.slots ?? []);
-        setAvailabilityDemo(Boolean(data.demo));
+        setAvailability({ key: availabilityKey, slots: data.slots ?? [], demo: Boolean(data.demo) });
       })
       .catch((caught) => {
         if (caught instanceof DOMException && caught.name === "AbortError") return;
         setError(caught instanceof Error ? caught.message : "Uygun saatler alınamadı.");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setAvailabilityLoading(false);
       });
 
     return () => controller.abort();
-  }, [date, expert, service, step]);
+  }, [availabilityKey]);
 
   function chooseCategory(value: Category) {
     setCategory(value);
@@ -192,7 +185,7 @@ export function BookingWizard() {
             <p className="field-label">TARİH SEÇİN</p>
             <div className="date-strip">
               {days.map((item) => (
-                <button type="button" key={item.iso} className={date === item.iso ? "selected" : ""} onClick={() => { setDate(item.iso); setTime(""); }}>
+                <button type="button" key={item.iso} className={date === item.iso ? "selected" : ""} onClick={() => { setDate(item.iso); setTime(""); setError(""); }}>
                   <small>{item.weekday}</small><strong>{item.day}</strong><span>{item.month}</span>
                 </button>
               ))}
