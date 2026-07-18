@@ -1,5 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SiteLogo } from "@/components/site-logo";
+
+const instagramUrl = "https://www.instagram.com/oceanmanedirne/";
 
 const featuredServices = [
   { number: "01", title: "Saç Tasarımı", text: "Yüz hatlarınıza ve günlük stilinize göre modern, klasik veya fade kesimler.", meta: "45 dk", icon: "✦" },
@@ -30,7 +33,10 @@ export default function HomePage() {
             <a href="#ekip">Ekibimiz</a>
             <a href="#iletisim">İletişim</a>
           </div>
-          <Link className="nav-book" href="/randevu">Randevu Al <Arrow /></Link>
+          <div className="nav-actions">
+            <a className="nav-instagram" href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Oceanman Instagram hesabını aç">Instagram</a>
+            <Link className="nav-book" href="/randevu">Randevu Al <Arrow /></Link>
+          </div>
         </nav>
 
         <div className="hero-orbit hero-orbit-one" />
@@ -45,8 +51,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="hero-visual" aria-hidden="true">
-          <div className="hero-monogram">OM</div>
+        <div className="hero-visual">
+          <Image className="hero-photo" src="/images/oceanman-barber.jpg" alt="Oceanman salonunda saç şekillendirme uygulaması" fill sizes="(max-width: 720px) 520px, 40vw" priority />
           <div className="hero-card hero-card-top"><span>7 GÜN</span><strong>09:00 — 20:00</strong></div>
           <div className="hero-card hero-card-bottom"><span>MÜŞTERİ PUANI</span><strong>★ 4.9</strong></div>
         </div>
@@ -54,7 +60,7 @@ export default function HomePage() {
         <div className="hero-bottom-line">
           <span>ŞÜKRÜPAŞA · EDİRNE</span>
           <span>SAÇ · SAKAL · BAKIM · SOLARYUM</span>
-          <span>EST. 2018</span>
+          <span>EST. 2017</span>
         </div>
       </section>
 
@@ -82,6 +88,7 @@ export default function HomePage() {
 
       <section className="story-section" id="hikayemiz">
         <div className="story-visual">
+          <Image src="/images/oceanman-cutting.jpg" alt="Oceanman'de makasla saç kesimi detayı" fill sizes="(max-width: 1050px) 100vw, 52vw" />
           <div className="story-stamp"><strong>O</strong><span>USTALIK<br />VE STİL</span></div>
           <div className="story-lines" />
           <p>GELENEKSEL USTALIK<br />MODERN VİZYON</p>
@@ -114,18 +121,35 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="instagram-section" aria-labelledby="instagram-heading">
+        <div className="instagram-copy">
+          <p className="eyebrow dark">@OCEANMANEDIRNE</p>
+          <h2 id="instagram-heading">Salondan yeni stiller,<br /><em>Instagram&apos;da.</em></h2>
+          <p>Son kesimlerimizi, bakım uygulamalarımızı ve salondan güncel kareleri takip edin.</p>
+          <a className="instagram-button" href={instagramUrl} target="_blank" rel="noreferrer">Instagram&apos;da Takip Et <Arrow /></a>
+        </div>
+        <div className="instagram-grid">
+          <a href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Oceanman Instagram profilini aç">
+            <Image src="/images/oceanman-style.jpg" alt="Oceanman salonunda saç şekillendirme" fill sizes="(max-width: 720px) 100vw, 34vw" />
+          </a>
+          <a href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Oceanman Instagram profilini aç">
+            <Image src="/images/oceanman-salon.jpg" alt="Oceanman Yeni Nesil Berber salonu" fill sizes="(max-width: 720px) 100vw, 34vw" />
+          </a>
+        </div>
+      </section>
+
       <section className="home-cta" id="iletisim">
         <p className="eyebrow">SIRA SENDE</p>
         <h2>Yeni stilin için<br /><em>bir zaman seç.</em></h2>
         <p>Hizmetini, uzmanını ve sana uygun saati birkaç adımda belirle.</p>
         <Link className="gold-button" href="/randevu">Online Randevu Al <Arrow /></Link>
-        <div className="cta-details"><span>Şükrüpaşa, Edirne</span><span>Her gün 09:00 — 20:00</span><a href="tel:+905402360066">0 540 236 00 66</a></div>
+        <div className="cta-details"><span>Şükrüpaşa, Edirne</span><span>Her gün 09:00 — 20:00</span><a href="tel:+905402360066">0 540 236 00 66</a><a href={instagramUrl} target="_blank" rel="noreferrer">@oceanmanedirne ↗</a></div>
       </section>
 
       <footer className="home-footer">
         <SiteLogo light />
         <p>Görünüşün imzandır. İmzanı Oceanman ile at.</p>
-        <div><a href="#hizmetler">Hizmetler</a><a href="#ekip">Ekibimiz</a><Link href="/randevu">Randevu</Link></div>
+        <div><a href="#hizmetler">Hizmetler</a><a href="#ekip">Ekibimiz</a><Link href="/randevu">Randevu</Link><a href={instagramUrl} target="_blank" rel="noreferrer">Instagram ↗</a></div>
         <small>© {new Date().getFullYear()} Oceanman Edirne</small>
       </footer>
     </main>
