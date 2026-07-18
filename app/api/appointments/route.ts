@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       appointmentId: `demo-${crypto.randomUUID()}`,
       cancellationUrl: "/randevu/iptal?token=demo",
       demo: true,
-      message: "Örnek randevunuz oluşturuldu. Onay bilgileri telefonunuza gönderilecek.",
+      message: "Örnek randevunuz oluşturuldu. İptal bağlantınızı saklayın.",
     });
   }
 
@@ -73,6 +73,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     appointmentId,
     cancellationUrl: `/randevu/iptal?token=${encodeURIComponent(cancellationToken)}`,
-    message: "Randevunuz kaydedildi. Onay bilgileri telefonunuza gönderilecek.",
+    message: "Randevunuz kaydedildi. İptal bağlantınızı saklayın.",
   });
 }
