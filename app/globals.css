@@ -109,12 +109,8 @@ button { color: inherit; }
 .team-portrait { position: relative; display: grid; min-height: 390px; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 34%, rgba(255,255,255,.65), transparent 25%), linear-gradient(150deg, #b4b0a8, #827e77); }
 .portrait-2 { background: radial-gradient(circle at 50% 34%, rgba(255,255,255,.55), transparent 25%), linear-gradient(150deg, #a9afa9, #626d69); }
 .portrait-3 { background: radial-gradient(circle at 50% 34%, rgba(255,255,255,.5), transparent 25%), linear-gradient(150deg, #b4aa9e, #766b61); }
-.team-portrait::after { position: absolute; inset: 0; z-index: 1; content: ""; background: linear-gradient(180deg, transparent 52%, rgba(8,16,14,.55) 100%); pointer-events: none; }
-.team-portrait > img { object-fit: cover; filter: saturate(.82) contrast(1.03); transition: transform .45s, filter .45s; }
-.team-card:hover .team-portrait > img { transform: scale(1.035); filter: saturate(1) contrast(1.04); }
-.portrait-1 > img { object-position: center 32%; }
-.portrait-2 > img { object-position: 54% center; }
-.portrait-3 > img { object-position: center center; }
+.team-portrait::after { position: absolute; bottom: -80px; width: 240px; height: 300px; content: ""; border-radius: 50% 50% 20% 20%; background: rgba(20,29,26,.74); box-shadow: 0 -30px 60px rgba(255,255,255,.08); }
+.team-portrait > span { position: relative; z-index: 2; color: rgba(255,255,255,.85); font-family: var(--font-playfair), serif; font-size: 72px; }
 .team-portrait i { position: absolute; right: 12px; bottom: 16px; z-index: 3; color: rgba(255,255,255,.5); font-size: 7px; letter-spacing: .25em; writing-mode: vertical-rl; }
 .team-card > div:last-child { position: relative; padding: 24px 28px 28px; }
 .team-card > div:last-child > span { position: absolute; top: 27px; right: 27px; color: #9a7b42; font-size: 9px; font-weight: 800; }
