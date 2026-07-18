@@ -146,6 +146,8 @@ button { color: inherit; }
 .booking-header-right { display: flex; align-items: center; gap: 25px; }
 .header-meta { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,.5); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #86b491; box-shadow: 0 0 0 4px rgba(134,180,145,.12); }
+.cancel-booking-entry { color: rgba(255,255,255,.68); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; transition: color .2s; }
+.cancel-booking-entry:hover { color: var(--gold-light); }
 .back-home { padding-left: 25px; border-left: 1px solid var(--line-dark); color: var(--gold-light); font-size: 10px; font-weight: 800; text-transform: uppercase; }
 .hero { display: grid; grid-template-columns: .78fr 1.22fr; align-items: center; gap: clamp(45px, 7vw, 120px); min-height: calc(100vh - 145px); padding: 55px 0; }
 .hero-copy h1 { margin: 15px 0 25px; font-family: var(--font-playfair), serif; font-size: clamp(50px, 5.2vw, 82px); font-weight: 500; letter-spacing: -.05em; line-height: .93; }
@@ -235,6 +237,7 @@ button { color: inherit; }
 .receipt span, .receipt strong { display: block; }
 .receipt span { color: #7d827d; font-size: 7px; text-transform: uppercase; }
 .receipt strong { margin-top: 4px; font-size: 10px; }
+.booking-reference-note { max-width: 470px; margin: -10px 0 22px !important; font-size: 9px !important; line-height: 1.6; }
 .demo-note { max-width: 440px; padding: 10px; background: #e5dfd2; }
 .cancel-link { margin: -8px 0 22px; color: #795f31; border-bottom: 1px solid #b49a6a; font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .cancel-page { min-height: 100vh; }
@@ -245,6 +248,11 @@ button { color: inherit; }
 .cancel-card > p:not(.eyebrow) { max-width: 500px; margin: 0 0 28px; color: var(--muted); font-size: 12px; line-height: 1.7; }
 .cancel-card .primary-button { margin-bottom: 18px; }
 .cancel-card .outline-button { color: #785d2c; border-color: #b79d6d; }
+.cancel-form { display: grid; width: min(100%, 430px); gap: 14px; margin-bottom: 18px; text-align: left; }
+.cancel-form label > span { display: block; margin-bottom: 6px; color: #646b66; font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.cancel-form input { width: 100%; padding: 13px 14px; outline: none; border: 1px solid #d5cfc3; background: rgba(255,255,255,.65); font-size: 11px; }
+.cancel-form input:focus { border-color: #9a7537; box-shadow: 0 0 0 2px rgba(154,117,55,.1); }
+.cancel-form .primary-button { width: 100%; margin: 4px 0 0; }
 
 @media (max-width: 1050px) {
   .nav-links { display: none; }
@@ -299,6 +307,9 @@ button { color: inherit; }
   .site-shell { padding: 0 15px; }
   .site-header { height: 75px; }
   .header-meta { display: none; }
+  .booking-header-right { gap: 12px; }
+  .cancel-booking-entry { font-size: 8px; }
+  .back-home { padding-left: 12px; font-size: 8px; }
   .booking-hero { gap: 35px; padding-top: 50px; }
   .hero-copy h1 { font-size: 48px; }
   .hero-proof { gap: 12px; }
@@ -319,4 +330,5 @@ button { color: inherit; }
   .booking-actions { padding: 12px 19px 17px; }
   .primary-button { min-width: 155px; }
   .site-footer { margin-top: 35px; }
+  .cancel-card { padding: 40px 22px; }
 }

@@ -3,8 +3,14 @@ import { deleteGoogleEvent } from "@/lib/google-calendar";
 import { getPublicSupabase } from "@/lib/supabase-server";
 
 export async function POST(request: Request) {
-  const input = (await request.json().catch(() => ({}))) as { token?: string };
-  if (!input.token) return NextResponse.json({ error: "İptal bağlantısı geçersiz." }, { status: 400 });
+  const input = (await request.json().catch(() => ({}))) as {
+    token?: string;
+    appointmentCode?: string;
+    phone?: string;
+  };
+  if (!input.token && (!input.appointmentCode || !input.phone)) {
+    return NextResponse.json({ error: "Randevu numarası ve telefon gereklidir." }, { status: 400 });
+  }
 
   const supabase = getPublicSupabase();
   if (!supabase) {
@@ -12,7 +18,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Randevu sistemi henüz canlı veritabanına bağlı değil." }, { status: 503 });
   }
 
-  const { data, error } = await supabase.rpc("cancel_public_appointment_v2", { p_token: input.token });
+  const cancellationRequest = input.token
+    ? supabase.rpc("cancel_public_appointment_v2", { p_token: input.token })
+    : supabase.rpc("cancel_public_appointment_by_reference", {
+        p_reference: input.appointmentCode?.trim(),
+        p_phone: input.phone?.trim(),
+      });
+  const { data, error } = await cancellationRequest;
   if (error) return NextResponse.json({ error: "Randevu iptal edilemedi." }, { status: 500 });
   const cancelled = Array.isArray(data) ? data[0] : data;
   if (!cancelled?.appointment_id) return NextResponse.json({ error: "Randevu bulunamadı veya daha önce iptal edildi." }, { status: 404 });

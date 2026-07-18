@@ -39,12 +39,13 @@ export async function POST(request: Request) {
     return NextResponse.json({
       appointmentId: `demo-${crypto.randomUUID()}`,
       cancellationUrl: "/randevu/iptal?token=demo",
+      cancellationCode: "DEMO",
       demo: true,
       message: "Örnek randevunuz oluşturuldu. İptal bağlantınızı saklayın.",
     });
   }
 
-  const { data, error } = await supabase.rpc("create_public_appointment_v2", {
+  const { data, error } = await supabase.rpc("create_public_appointment_v3", {
     p_service_id: input.serviceId,
     p_staff_id: input.staffId,
     p_start_at: input.startAt,
@@ -65,7 +66,8 @@ export async function POST(request: Request) {
   const created = Array.isArray(data) ? data[0] : data;
   const appointmentId = String(created?.appointment_id ?? "");
   const cancellationToken = String(created?.cancellation_token ?? "");
-  if (!appointmentId || !cancellationToken) {
+  const cancellationCode = String(created?.cancellation_code ?? "");
+  if (!appointmentId || !cancellationToken || !cancellationCode) {
     return NextResponse.json({ error: "Randevu kaydı doğrulanamadı." }, { status: 500 });
   }
   await syncAppointmentToGoogle(appointmentId);
@@ -73,6 +75,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     appointmentId,
     cancellationUrl: `/randevu/iptal?token=${encodeURIComponent(cancellationToken)}`,
+    cancellationCode,
     message: "Randevunuz kaydedildi. İptal bağlantınızı saklayın.",
   });
 }

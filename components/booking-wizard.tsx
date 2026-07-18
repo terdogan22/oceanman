@@ -5,7 +5,7 @@ import Link from "next/link";
 import { categories, nextDays, services, staff, type Category, type Service, type Staff } from "@/lib/booking-data";
 
 type Customer = { firstName: string; lastName: string; phone: string; email: string };
-type BookingResponse = { appointmentId: string; cancellationUrl?: string; demo?: boolean; message: string };
+type BookingResponse = { appointmentId: string; cancellationUrl?: string; cancellationCode?: string; demo?: boolean; message: string };
 
 const initialCustomer: Customer = { firstName: "", lastName: "", phone: "", email: "" };
 const steps = ["Hizmet", "İşlem", "Uzman", "Zaman", "Bilgiler"];
@@ -120,8 +120,9 @@ export function BookingWizard() {
           <div><span>Hizmet</span><strong>{service?.title}</strong></div>
           <div><span>Uzman</span><strong>{expert?.name}</strong></div>
           <div><span>Tarih</span><strong>{date} · {time}</strong></div>
-          <div><span>Randevu No</span><strong>{result.appointmentId.slice(0, 12).toUpperCase()}</strong></div>
+          <div><span>Randevu No</span><strong>{result.cancellationCode ?? "—"}</strong></div>
         </div>
+        <p className="booking-reference-note">Randevu numaranızı saklayın; telefon numaranızla birlikte iptal işlemi yapabilirsiniz.</p>
         {result.demo && <p className="demo-note">Demo modu: Supabase bağlantısı yapıldığında kayıt gerçek veritabanına yazılacak.</p>}
         {result.cancellationUrl && <Link className="cancel-link" href={result.cancellationUrl}>İptal bağlantısını görüntüle</Link>}
         <button type="button" className="primary-button" onClick={reset}>Yeni randevu oluştur <Arrow /></button>

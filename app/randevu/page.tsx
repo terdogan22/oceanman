@@ -15,6 +15,7 @@ export default function BookingPage() {
         <SiteLogo light />
         <div className="booking-header-right">
           <div className="header-meta"><span className="status-dot" /> Bugün 09:00–20:00</div>
+          <Link className="cancel-booking-entry" href="/randevu/iptal">Randevuyu iptal et</Link>
           <Link className="back-home" href="/">Ana sayfa</Link>
         </div>
       </header>
