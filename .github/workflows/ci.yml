@@ -16,7 +16,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
       # İlk yerel kurulum pnpm-lock.yaml üretecek; o dosya eklendikten sonra
       # bu satır --frozen-lockfile olarak sıkılaştırılabilir.
       - run: pnpm install --no-frozen-lockfile
