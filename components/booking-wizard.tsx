@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { categories, nextDays, services, staff, timeSlots, type Category, type Service, type Staff } from "@/lib/booking-data";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { categories, nextDays, services, staff, type Category, type Service, type Staff } from "@/lib/booking-data";
 
 type Customer = { firstName: string; lastName: string; phone: string; email: string };
-type BookingResponse = { appointmentId: string; demo?: boolean; message: string };
+type BookingResponse = { appointmentId: string; cancellationUrl?: string; demo?: boolean; message: string };
 
 const initialCustomer: Customer = { firstName: "", lastName: "", phone: "", email: "" };
 const steps = ["Hizmet", "İşlem", "Uzman", "Zaman", "Bilgiler"];
@@ -23,6 +24,9 @@ export function BookingWizard() {
   const [time, setTime] = useState("");
   const [customer, setCustomer] = useState<Customer>(initialCustomer);
   const [accepted, setAccepted] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityDemo, setAvailabilityDemo] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<BookingResponse | null>(null);
   const [error, setError] = useState("");
@@ -30,6 +34,35 @@ export function BookingWizard() {
   const filteredServices = services.filter((item) => item.category === category);
   const filteredStaff = staff.filter((item) => !service || item.services.includes(service.id));
   const canContinue = [Boolean(category), Boolean(service), Boolean(expert), Boolean(date && time)][step] ?? false;
+
+  useEffect(() => {
+    if (step !== 3 || !service || !expert || !date) return;
+
+    const controller = new AbortController();
+    setAvailabilityLoading(true);
+    setAvailableSlots([]);
+    setAvailabilityDemo(false);
+    setTime("");
+    setError("");
+
+    const query = new URLSearchParams({ serviceId: service.id, staffId: expert.id, date });
+    fetch(`/api/availability?${query}`, { signal: controller.signal })
+      .then(async (response) => {
+        const data = (await response.json()) as { slots?: string[]; demo?: boolean; error?: string };
+        if (!response.ok) throw new Error(data.error || "Uygun saatler alınamadı.");
+        setAvailableSlots(data.slots ?? []);
+        setAvailabilityDemo(Boolean(data.demo));
+      })
+      .catch((caught) => {
+        if (caught instanceof DOMException && caught.name === "AbortError") return;
+        setError(caught instanceof Error ? caught.message : "Uygun saatler alınamadı.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setAvailabilityLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [date, expert, service, step]);
 
   function chooseCategory(value: Category) {
     setCategory(value);
@@ -97,6 +130,7 @@ export function BookingWizard() {
           <div><span>Randevu No</span><strong>{result.appointmentId.slice(0, 12).toUpperCase()}</strong></div>
         </div>
         {result.demo && <p className="demo-note">Demo modu: Supabase bağlantısı yapıldığında kayıt gerçek veritabanına yazılacak.</p>}
+        {result.cancellationUrl && <Link className="cancel-link" href={result.cancellationUrl}>İptal bağlantısını görüntüle</Link>}
         <button type="button" className="primary-button" onClick={reset}>Yeni randevu oluştur <Arrow /></button>
       </section>
     );
@@ -164,12 +198,14 @@ export function BookingWizard() {
               ))}
             </div>
             <p className="field-label time-title">UYGUN SAATLER</p>
-            <div className="time-grid">
-              {timeSlots.map((slot, index) => {
-                const unavailable = (index + new Date(`${date}T12:00:00`).getDate()) % 5 === 0;
-                return <button type="button" key={slot} disabled={unavailable} className={time === slot ? "selected" : ""} onClick={() => setTime(slot)}>{slot}</button>;
-              })}
+            <div className="time-grid" aria-busy={availabilityLoading}>
+              {availableSlots.map((slot) => (
+                <button type="button" key={slot} className={time === slot ? "selected" : ""} onClick={() => setTime(slot)}>{slot}</button>
+              ))}
             </div>
+            {availabilityLoading && <p className="availability-state">Uygun saatler kontrol ediliyor…</p>}
+            {!availabilityLoading && !error && availableSlots.length === 0 && <p className="availability-state">Bu gün için uygun saat kalmadı. Başka bir tarih seçebilirsiniz.</p>}
+            {availabilityDemo && <p className="availability-demo">Demo saatleri gösteriliyor. Supabase bağlantısından sonra dolu saatler gerçek zamanlı kapanacak.</p>}
           </div>
         )}
 

@@ -1,5 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { syncAppointmentToGoogle } from "@/lib/calendar-sync";
+import { getPublicSupabase } from "@/lib/supabase-server";
 
 type BookingInput = {
   serviceId?: string;
@@ -33,22 +34,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Lütfen bütün alanları doğru şekilde doldurun." }, { status: 422 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!supabaseUrl || !publishableKey || supabaseUrl.includes("YOUR_PROJECT")) {
+  const supabase = getPublicSupabase();
+  if (!supabase) {
     return NextResponse.json({
       appointmentId: `demo-${crypto.randomUUID()}`,
+      cancellationUrl: "/randevu/iptal?token=demo",
       demo: true,
       message: "Örnek randevunuz oluşturuldu. Onay bilgileri telefonunuza gönderilecek.",
     });
   }
 
-  const supabase = createClient(supabaseUrl, publishableKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-
-  const { data, error } = await supabase.rpc("create_public_appointment", {
+  const { data, error } = await supabase.rpc("create_public_appointment_v2", {
     p_service_id: input.serviceId,
     p_staff_id: input.staffId,
     p_start_at: input.startAt,
@@ -66,8 +62,17 @@ export async function POST(request: Request) {
     );
   }
 
+  const created = Array.isArray(data) ? data[0] : data;
+  const appointmentId = String(created?.appointment_id ?? "");
+  const cancellationToken = String(created?.cancellation_token ?? "");
+  if (!appointmentId || !cancellationToken) {
+    return NextResponse.json({ error: "Randevu kaydı doğrulanamadı." }, { status: 500 });
+  }
+  await syncAppointmentToGoogle(appointmentId);
+
   return NextResponse.json({
-    appointmentId: String(data),
+    appointmentId,
+    cancellationUrl: `/randevu/iptal?token=${encodeURIComponent(cancellationToken)}`,
     message: "Randevunuz kaydedildi. Onay bilgileri telefonunuza gönderilecek.",
   });
 }
