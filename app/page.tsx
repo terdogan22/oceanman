@@ -12,9 +12,9 @@ const featuredServices = [
 ];
 
 const team = [
-  { name: "Erdem Kaçan", role: "Senior Barber", initials: "EK", index: 1 },
-  { name: "Emrah Ak", role: "Style Director", initials: "EA", index: 2 },
-  { name: "Yunus Taş", role: "Barber & Care", initials: "YT", index: 3 },
+  { name: "Erdem Kaçan", role: "Stilist", photo: "/images/oceanman-style.jpg", index: 1 },
+  { name: "Emrah Ak", role: "Stilist", photo: "/images/oceanman-barber.jpg", index: 2 },
+  { name: "Yunus Taş", role: "Stilist", photo: "/images/oceanman-cutting.jpg", index: 3 },
 ];
 
 function Arrow() {
@@ -114,7 +114,10 @@ export default function HomePage() {
         <div className="team-grid">
           {team.map((member) => (
             <article className="team-card" key={member.name}>
-              <div className={`team-portrait portrait-${member.index}`}><span>{member.initials}</span><i>OCEANMAN</i></div>
+              <div className={`team-portrait portrait-${member.index}`}>
+                <Image src={member.photo} alt="Oceanman salonunda stilist çalışma anı" fill sizes="(max-width: 720px) 100vw, 33vw" />
+                <i>OCEANMAN</i>
+              </div>
               <div><span>0{member.index}</span><h3>{member.name}</h3><p>{member.role}</p></div>
             </article>
           ))}
