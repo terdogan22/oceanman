@@ -19,7 +19,7 @@ export function SiteLogo({ light = false }: { light?: boolean }) {
     <Link className={`brand ${light ? "brand-light" : ""}`} href="/" aria-label="Oceanman ana sayfa">
       <LogoMark />
       <span>
-        <strong>OCEAN</strong>MAN
+        <span className="brand-name"><strong>OCEAN</strong> MAN</span>
         <small>YENİ NESİL BERBER · EDİRNE</small>
       </span>
     </Link>

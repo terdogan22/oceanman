@@ -23,12 +23,13 @@ button { color: inherit; }
 .eyebrow { margin: 0; color: var(--gold-light); font-size: 11px; font-weight: 800; letter-spacing: .22em; }
 .eyebrow.dark { color: #8b6c32; }
 
-.brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); letter-spacing: .06em; }
+.brand { display: inline-flex; align-items: center; gap: 14px; color: var(--ink); letter-spacing: .06em; }
 .brand-light { color: #f9f4e9; }
-.brand .logo-mark { width: 46px; height: 46px; object-fit: cover; border: 1px solid rgba(209,168,90,.55); border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,.24); }
-.brand > span { display: flex; flex-direction: column; font-size: 18px; font-weight: 400; line-height: .92; }
+.brand .logo-mark { width: 56px; height: 56px; object-fit: cover; border: 1px solid rgba(209,168,90,.55); border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,.24); }
+.brand > span { display: flex; flex-direction: column; font-weight: 400; }
+.brand-name { display: block; white-space: nowrap; font-size: 21px; line-height: 1; }
 .brand strong { font-weight: 900; }
-.brand small { margin-top: 7px; font-size: 7px; font-weight: 700; letter-spacing: .2em; opacity: .64; }
+.brand small { margin-top: 8px; white-space: nowrap; font-size: 8px; font-weight: 700; letter-spacing: .2em; opacity: .64; }
 
 /* Homepage */
 .home-page { overflow: hidden; background: var(--paper); }
@@ -273,6 +274,10 @@ button { color: inherit; }
 }
 
 @media (max-width: 720px) {
+  .brand { gap: 9px; }
+  .brand .logo-mark { width: 46px; height: 46px; }
+  .brand-name { font-size: 16px; }
+  .brand small { margin-top: 6px; font-size: 6px; }
   .home-hero { min-height: 720px; padding: 0 20px; }
   .home-nav { height: 82px; }
   .nav-book { gap: 8px; min-width: auto; padding: 11px 12px; font-size: 9px; }
