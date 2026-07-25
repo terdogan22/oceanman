@@ -2,10 +2,19 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { categories, nextDays, services, staff, type Category, type Service, type Staff } from "@/lib/booking-data";
+import {
+  categories,
+  nextDays,
+  services as fallbackServices,
+  staff as fallbackStaff,
+  type Category,
+  type Service,
+  type Staff,
+} from "@/lib/booking-data";
 
 type Customer = { firstName: string; lastName: string; phone: string; email: string };
 type BookingResponse = { appointmentId: string; cancellationUrl?: string; cancellationCode?: string; demo?: boolean; message: string };
+type CatalogResponse = { services?: Service[]; staff?: Staff[]; error?: string };
 
 const initialCustomer: Customer = { firstName: "", lastName: "", phone: "", email: "" };
 const steps = ["Hizmet", "İşlem", "Uzman", "Zaman", "Bilgiler"];
@@ -28,9 +37,11 @@ export function BookingWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<BookingResponse | null>(null);
   const [error, setError] = useState("");
+  const [catalogServices, setCatalogServices] = useState<Service[]>(fallbackServices);
+  const [catalogStaff, setCatalogStaff] = useState<Staff[]>(fallbackStaff);
 
-  const filteredServices = services.filter((item) => item.category === category);
-  const filteredStaff = staff.filter((item) => !service || item.services.includes(service.id));
+  const filteredServices = catalogServices.filter((item) => item.category === category);
+  const filteredStaff = catalogStaff.filter((item) => !service || item.services.includes(service.id));
   const canContinue = [Boolean(category), Boolean(service), Boolean(expert), Boolean(date && time)][step] ?? false;
   const availabilityKey = step === 3 && service && expert && date
     ? new URLSearchParams({ serviceId: service.id, staffId: expert.id, date }).toString()
@@ -38,6 +49,23 @@ export function BookingWizard() {
   const availabilityLoading = Boolean(availabilityKey && availability.key !== availabilityKey);
   const availableSlots = availability.key === availabilityKey ? availability.slots : [];
   const availabilityDemo = availability.key === availabilityKey && availability.demo;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/catalog", { signal: controller.signal })
+      .then(async (response) => {
+        const data = (await response.json()) as CatalogResponse;
+        if (!response.ok) throw new Error(data.error || "Hizmet bilgileri alınamadı.");
+        if (data.services?.length) setCatalogServices(data.services);
+        if (data.staff?.length) setCatalogStaff(data.staff);
+      })
+      .catch((caught) => {
+        if (caught instanceof DOMException && caught.name === "AbortError") return;
+        setError(caught instanceof Error ? caught.message : "Hizmet bilgileri alınamadı.");
+      });
+
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     if (!availabilityKey) return;

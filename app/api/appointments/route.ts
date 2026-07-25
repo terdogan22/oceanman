@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendAppointmentCreatedEmail } from "@/lib/appointment-email";
 import { syncAppointmentToGoogle } from "@/lib/calendar-sync";
 import { getPublicSupabase } from "@/lib/supabase-server";
 
@@ -71,11 +72,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Randevu kaydı doğrulanamadı." }, { status: 500 });
   }
   await syncAppointmentToGoogle(appointmentId);
+  const emailSent = await sendAppointmentCreatedEmail(
+    appointmentId,
+    cancellationToken,
+    cancellationCode,
+  ).catch(() => false);
 
   return NextResponse.json({
     appointmentId,
     cancellationUrl: `/randevu/iptal?token=${encodeURIComponent(cancellationToken)}`,
     cancellationCode,
+    emailSent,
     message: "Randevunuz kaydedildi. İptal bağlantınızı saklayın.",
   });
 }

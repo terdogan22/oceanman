@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendAppointmentCancelledEmail } from "@/lib/appointment-email";
 import { deleteGoogleEvent } from "@/lib/google-calendar";
 import { getPublicSupabase } from "@/lib/supabase-server";
 
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
   if (cancelled.google_calendar_id && cancelled.google_event_id) {
     await deleteGoogleEvent(cancelled.google_calendar_id, cancelled.google_event_id).catch(() => undefined);
   }
+  const emailSent = await sendAppointmentCancelledEmail(String(cancelled.appointment_id)).catch(() => false);
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, emailSent });
 }
