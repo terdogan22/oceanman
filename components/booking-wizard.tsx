@@ -124,7 +124,7 @@ export function BookingWizard() {
         </div>
         <p className="booking-reference-note">Randevu numaranızı saklayın; telefon numaranızla birlikte iptal işlemi yapabilirsiniz.</p>
         {result.demo && <p className="demo-note">Demo modu: Supabase bağlantısı yapıldığında kayıt gerçek veritabanına yazılacak.</p>}
-        {result.cancellationUrl && <Link className="cancel-link" href={result.cancellationUrl}>İptal bağlantısını görüntüle</Link>}
+        {result.cancellationUrl && <Link className="cancel-link" href={result.cancellationUrl}>Randevuyu iptal et <span>→</span></Link>}
         <button type="button" className="primary-button" onClick={reset}>Yeni randevu oluştur <Arrow /></button>
       </section>
     );

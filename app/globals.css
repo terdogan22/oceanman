@@ -147,9 +147,15 @@ button { color: inherit; }
 .booking-header-right { display: flex; align-items: center; gap: 25px; }
 .header-meta { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,.5); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #86b491; box-shadow: 0 0 0 4px rgba(134,180,145,.12); }
-.cancel-booking-entry { color: rgba(255,255,255,.68); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; transition: color .2s; }
-.cancel-booking-entry:hover { color: var(--gold-light); }
 .back-home { padding-left: 25px; border-left: 1px solid var(--line-dark); color: var(--gold-light); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.cancel-booking-banner { display: flex; min-height: 76px; align-items: center; gap: 16px; margin-top: 18px; padding: 14px 18px; color: var(--ink); background: var(--gold-light); border: 1px solid rgba(255,255,255,.42); box-shadow: 0 14px 35px rgba(0,0,0,.18); transition: transform .2s, background .2s; }
+.cancel-booking-banner:hover { transform: translateY(-2px); background: #f6d991; }
+.cancel-booking-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; color: white; border-radius: 50%; background: var(--ink-soft); font-size: 25px; font-weight: 300; line-height: 1; }
+.cancel-booking-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.cancel-booking-copy small { color: #72592d; font-size: 8px; font-weight: 900; letter-spacing: .13em; }
+.cancel-booking-copy strong { font-family: var(--font-playfair), serif; font-size: 18px; font-weight: 600; line-height: 1.15; }
+.cancel-booking-action { display: flex; align-items: center; gap: 12px; padding-left: 18px; border-left: 1px solid rgba(11,21,18,.22); font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.cancel-booking-action b { font-size: 18px; }
 .hero { display: grid; grid-template-columns: .78fr 1.22fr; align-items: center; gap: clamp(45px, 7vw, 120px); min-height: calc(100vh - 145px); padding: 55px 0; }
 .hero-copy h1 { margin: 15px 0 25px; font-family: var(--font-playfair), serif; font-size: clamp(50px, 5.2vw, 82px); font-weight: 500; letter-spacing: -.05em; line-height: .93; }
 .hero-copy h1 em { color: var(--gold-light); font-weight: 400; }
@@ -226,7 +232,10 @@ button { color: inherit; }
 .primary-button { display: inline-flex; min-width: 170px; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 16px 14px 20px; border: 0; color: white; background: var(--ink-soft); cursor: pointer; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 .primary-button span { color: var(--gold-light); font-size: 16px; }
 .primary-button:disabled { cursor: not-allowed; opacity: .35; }
-.back-button { display: flex; align-items: center; gap: 8px; padding: 10px 0; border: 0; background: none; color: #777d78; cursor: pointer; font-size: 10px; }
+.back-button { display: inline-flex; min-width: 108px; align-items: center; justify-content: center; gap: 10px; padding: 12px 16px; color: #302617; border: 1px solid #a47c37; background: #d9bd80; box-shadow: 0 6px 16px rgba(76,57,26,.16); cursor: pointer; font-size: 10px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; transition: transform .2s, color .2s, background .2s; }
+.back-button:hover { transform: translateY(-1px); color: white; background: #8a6a34; }
+.back-button span { color: #5f451e; font-size: 16px; line-height: 1; }
+.back-button:hover span { color: var(--gold-light); }
 .form-error { margin: 0 34px; padding: 9px 12px; color: #8b322b; background: #f2dcd7; font-size: 9px; }
 .success-card { display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 40px; text-align: center; }
 .success-icon { display: grid; width: 62px; height: 62px; place-items: center; margin-bottom: 20px; color: white; border-radius: 50%; background: #597763; font-size: 25px; }
@@ -240,7 +249,9 @@ button { color: inherit; }
 .receipt strong { margin-top: 4px; font-size: 10px; }
 .booking-reference-note { max-width: 470px; margin: -10px 0 22px !important; font-size: 9px !important; line-height: 1.6; }
 .demo-note { max-width: 440px; padding: 10px; background: #e5dfd2; }
-.cancel-link { margin: -8px 0 22px; color: #795f31; border-bottom: 1px solid #b49a6a; font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.cancel-link { display: inline-flex; min-width: 230px; align-items: center; justify-content: space-between; gap: 24px; margin: -7px 0 22px; padding: 13px 16px 13px 18px; color: #fff; background: #8a4b3e; box-shadow: 0 8px 20px rgba(72,35,29,.18); font-size: 10px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; transition: transform .2s, background .2s; }
+.cancel-link:hover { transform: translateY(-2px); background: #743b31; }
+.cancel-link span { color: #f8d98f; font-size: 17px; }
 .cancel-page { min-height: 100vh; }
 .cancel-shell { display: grid; min-height: calc(100vh - 86px); place-items: center; padding: 50px 0; }
 .cancel-card { display: flex; min-height: 440px; align-items: center; justify-content: center; flex-direction: column; padding: 55px; text-align: center; }
@@ -313,8 +324,11 @@ button { color: inherit; }
   .site-header { height: 75px; }
   .header-meta { display: none; }
   .booking-header-right { gap: 12px; }
-  .cancel-booking-entry { font-size: 8px; }
   .back-home { padding-left: 12px; font-size: 8px; }
+  .cancel-booking-banner { align-items: flex-start; flex-wrap: wrap; gap: 11px; margin-top: 12px; padding: 13px; }
+  .cancel-booking-icon { width: 38px; height: 38px; flex-basis: 38px; font-size: 22px; }
+  .cancel-booking-copy strong { font-size: 15px; }
+  .cancel-booking-action { width: 100%; justify-content: space-between; padding: 9px 4px 0 49px; border-top: 1px solid rgba(11,21,18,.18); border-left: 0; }
   .booking-hero { gap: 35px; padding-top: 50px; }
   .hero-copy h1 { font-size: 48px; }
   .hero-proof { gap: 12px; }

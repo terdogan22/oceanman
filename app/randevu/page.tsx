@@ -15,10 +15,18 @@ export default function BookingPage() {
         <SiteLogo light />
         <div className="booking-header-right">
           <div className="header-meta"><span className="status-dot" /> Bugün 09:00–20:00</div>
-          <Link className="cancel-booking-entry" href="/randevu/iptal">Randevuyu iptal et</Link>
           <Link className="back-home" href="/">Ana sayfa</Link>
         </div>
       </header>
+
+      <Link className="cancel-booking-banner" href="/randevu/iptal">
+        <span className="cancel-booking-icon" aria-hidden="true">×</span>
+        <span className="cancel-booking-copy">
+          <small>MEVCUT RANDEVUNUZ İÇİN</small>
+          <strong>Randevunuzu iptal etmek mi istiyorsunuz?</strong>
+        </span>
+        <span className="cancel-booking-action">İptal ekranına git <b>→</b></span>
+      </Link>
 
       <section className="hero booking-hero">
         <div className="hero-copy">
