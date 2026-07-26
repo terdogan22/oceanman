@@ -147,7 +147,7 @@ export default function HomePage() {
       </section>
 
       <footer className="home-footer">
-        <SiteLogo light />
+        <SiteLogo light reloadOnClick />
         <p>Görünüşün imzandır. İmzanı Oceanman ile at.</p>
         <div><a href="#hizmetler">Hizmetler</a><a href="#ekip">Ekibimiz</a><Link href="/randevu">Randevu</Link><a href={instagramUrl} target="_blank" rel="noreferrer">Instagram ↗</a></div>
         <small>© {new Date().getFullYear()} Oceanman Edirne</small>
