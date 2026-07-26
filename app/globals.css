@@ -248,6 +248,12 @@ button { color: inherit; }
 .receipt span { color: #7d827d; font-size: 7px; text-transform: uppercase; }
 .receipt strong { margin-top: 4px; font-size: 10px; }
 .booking-reference-note { max-width: 470px; margin: -10px 0 22px !important; font-size: 9px !important; line-height: 1.6; }
+.booking-unavailable-card { display: flex; min-height: 500px; align-items: center; justify-content: center; flex-direction: column; padding: clamp(36px, 7vw, 72px); text-align: center; }
+.booking-unavailable-icon { display: grid; width: 62px; height: 62px; margin-bottom: 24px; place-items: center; color: #f4f0e7; border-radius: 50%; background: #a27834; font-family: var(--font-playfair), serif; font-size: 34px; }
+.booking-unavailable-card h2 { max-width: 540px; margin: 10px 0 14px; font-family: var(--font-playfair), serif; font-size: clamp(30px, 5vw, 48px); font-weight: 500; line-height: 1.08; }
+.booking-unavailable-card > p:not(.eyebrow) { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.booking-phone-button { display: flex; min-width: 250px; align-items: center; justify-content: space-between; gap: 26px; margin-top: 30px; padding: 17px 20px; color: white; background: var(--ink-soft); font-size: 13px; font-weight: 800; letter-spacing: .04em; }
+.booking-phone-button span { font-size: 20px; }
 .demo-note { max-width: 440px; padding: 10px; background: #e5dfd2; }
 .cancel-link { display: inline-flex; min-width: 230px; align-items: center; justify-content: space-between; gap: 24px; margin: -7px 0 22px; padding: 13px 16px 13px 18px; color: #fff; background: #8a4b3e; box-shadow: 0 8px 20px rgba(72,35,29,.18); font-size: 10px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; transition: transform .2s, background .2s; }
 .cancel-link:hover { transform: translateY(-2px); background: #743b31; }
@@ -282,6 +288,17 @@ button { color: inherit; }
 .admin-header > div { display: flex; align-items: center; gap: 16px; color: var(--muted); font-size: 10px; }
 .admin-header button { padding: 9px 12px; color: #704439; border: 1px solid #b58c80; background: transparent; cursor: pointer; font-size: 9px; font-weight: 800; text-transform: uppercase; }
 .admin-content { width: min(100%, 1180px); margin: 45px auto 0; }
+.admin-booking-switch { display: flex; align-items: center; justify-content: space-between; gap: 30px; margin-bottom: 28px; padding: 25px 28px; border: 1px solid #cfc2ae; background: #f8f4ec; box-shadow: 0 10px 26px rgba(26,35,31,.07); }
+.admin-booking-switch .eyebrow { margin-bottom: 6px; }
+.admin-booking-heading { display: flex; align-items: center; gap: 12px; }
+.admin-booking-heading h2 { margin: 0; font-family: var(--font-playfair), serif; font-size: 29px; font-weight: 500; }
+.admin-booking-heading span { padding: 6px 9px; color: white; background: #477256; font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.admin-booking-switch.is-closed { border-color: #c99d91; background: #f3e4df; }
+.admin-booking-switch.is-closed .admin-booking-heading span { background: #954b3d; }
+.admin-booking-switch > div > p:last-child { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+.admin-booking-switch > button { min-width: 180px; padding: 14px 18px; color: white; border: 0; background: #92483b; cursor: pointer; font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.admin-booking-switch.is-closed > button { background: #356547; }
+.admin-booking-switch > button:disabled { cursor: wait; opacity: .55; }
 .admin-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
 .admin-title > p { max-width: 340px; margin: 0 0 7px; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .admin-service-list { display: grid; gap: 16px; }
@@ -397,6 +414,8 @@ button { color: inherit; }
   .admin-header { align-items: flex-start; }
   .admin-header > div { align-items: flex-end; flex-direction: column; gap: 8px; }
   .admin-title { align-items: flex-start; flex-direction: column; }
+  .admin-booking-switch { align-items: stretch; flex-direction: column; gap: 20px; padding: 21px; }
+  .admin-booking-switch > button { width: 100%; }
   .admin-tabs { overflow-x: auto; }
   .admin-fields { grid-template-columns: 1fr; }
   .admin-fields .admin-wide { grid-column: auto; }

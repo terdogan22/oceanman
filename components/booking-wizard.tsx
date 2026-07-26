@@ -15,6 +15,7 @@ import {
 type Customer = { firstName: string; lastName: string; phone: string; email: string };
 type BookingResponse = { appointmentId: string; cancellationUrl?: string; cancellationCode?: string; demo?: boolean; message: string };
 type CatalogResponse = { services?: Service[]; staff?: Staff[]; error?: string };
+type BookingStatus = { loaded: boolean; enabled: boolean; phoneDisplay: string; phoneHref: string };
 
 const initialCustomer: Customer = { firstName: "", lastName: "", phone: "", email: "" };
 const steps = ["Hizmet", "İşlem", "Uzman", "Zaman", "Bilgiler"];
@@ -39,6 +40,12 @@ export function BookingWizard() {
   const [error, setError] = useState("");
   const [catalogServices, setCatalogServices] = useState<Service[]>(fallbackServices);
   const [catalogStaff, setCatalogStaff] = useState<Staff[]>(fallbackStaff);
+  const [bookingStatus, setBookingStatus] = useState<BookingStatus>({
+    loaded: false,
+    enabled: true,
+    phoneDisplay: "0 540 236 00 66",
+    phoneHref: "+905402360066",
+  });
 
   const filteredServices = catalogServices.filter((item) => item.category === category);
   const filteredStaff = catalogStaff.filter((item) => !service || item.services.includes(service.id));
@@ -49,6 +56,27 @@ export function BookingWizard() {
   const availabilityLoading = Boolean(availabilityKey && availability.key !== availabilityKey);
   const availableSlots = availability.key === availabilityKey ? availability.slots : [];
   const availabilityDemo = availability.key === availabilityKey && availability.demo;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/booking-status", { cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        const data = (await response.json()) as { enabled?: boolean; phoneDisplay?: string; phoneHref?: string };
+        if (!response.ok) throw new Error();
+        setBookingStatus({
+          loaded: true,
+          enabled: data.enabled !== false,
+          phoneDisplay: data.phoneDisplay || "0 540 236 00 66",
+          phoneHref: data.phoneHref || "+905402360066",
+        });
+      })
+      .catch((caught) => {
+        if (caught instanceof DOMException && caught.name === "AbortError") return;
+        setBookingStatus((current) => ({ ...current, loaded: true }));
+      });
+
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -135,6 +163,30 @@ export function BookingWizard() {
     setCustomer(initialCustomer);
     setAccepted(false);
     setResult(null);
+  }
+
+  if (!bookingStatus.loaded) {
+    return (
+      <section className="booking-card booking-unavailable-card" aria-busy="true">
+        <p className="eyebrow">ONLINE RANDEVU</p>
+        <h2>Randevu durumu kontrol ediliyor…</h2>
+      </section>
+    );
+  }
+
+  if (!bookingStatus.enabled) {
+    return (
+      <section className="booking-card booking-unavailable-card" aria-live="polite">
+        <span className="booking-unavailable-icon" aria-hidden="true">!</span>
+        <p className="eyebrow">ONLINE RANDEVU</p>
+        <h2>Randevu özelliğimiz şu an hizmet veremiyor.</h2>
+        <p>Lütfen şu telefon numarasından randevu alınız.</p>
+        <a className="booking-phone-button" href={`tel:${bookingStatus.phoneHref}`}>
+          {bookingStatus.phoneDisplay}
+          <span aria-hidden="true">→</span>
+        </a>
+      </section>
+    );
   }
 
   if (result) {

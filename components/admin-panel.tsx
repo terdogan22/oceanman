@@ -44,6 +44,12 @@ type ServicesResponse = {
   error?: string;
 };
 
+type BookingSettings = {
+  bookingEnabled: boolean;
+  phoneDisplay: string;
+  phoneHref: string;
+};
+
 const emptyEmailSettings: EmailSettings = {
   provider: "resend",
   fromName: "Oceanman Edirne",
@@ -76,6 +82,12 @@ export function AdminPanel() {
   const [savedId, setSavedId] = useState("");
   const [message, setMessage] = useState(supabase ? "" : "Supabase bağlantısı yapılandırılmamış.");
   const [newUser, setNewUser] = useState({ displayName: "", email: "", password: "" });
+  const [bookingSettings, setBookingSettings] = useState<BookingSettings>({
+    bookingEnabled: true,
+    phoneDisplay: "0 540 236 00 66",
+    phoneHref: "+905402360066",
+  });
+  const [bookingSettingsLoaded, setBookingSettingsLoaded] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
@@ -101,6 +113,7 @@ export function AdminPanel() {
   useEffect(() => {
     if (!session) return;
     loadServices(session);
+    loadBookingSettings(session);
     // loadServices intentionally runs only when the authenticated session changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
@@ -129,6 +142,20 @@ export function AdminPanel() {
       setMessage("");
     }
     setLoading(false);
+  }
+
+  async function loadBookingSettings(currentSession = session) {
+    if (!currentSession) return;
+    const response = await fetch("/api/admin/booking-settings", {
+      cache: "no-store",
+      headers: authHeaders(currentSession),
+    });
+    const data = (await response.json()) as { settings?: BookingSettings; error?: string };
+    if (!response.ok) setMessage(data.error || "Randevu ayarı alınamadı.");
+    else if (data.settings) {
+      setBookingSettings(data.settings);
+      setBookingSettingsLoaded(true);
+    }
   }
 
   async function loadUsers(currentSession = session) {
@@ -187,6 +214,26 @@ export function AdminPanel() {
     const data = (await response.json()) as { error?: string };
     if (!response.ok) setMessage(data.error || "Hizmet kaydedilemedi.");
     else setSavedId(service.id);
+    setSavingId("");
+  }
+
+  async function toggleBooking() {
+    if (!session || !bookingSettingsLoaded) return;
+    const nextEnabled = !bookingSettings.bookingEnabled;
+    setSavingId("booking-settings");
+    setMessage("");
+    const response = await fetch("/api/admin/booking-settings", {
+      method: "PATCH",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ bookingEnabled: nextEnabled }),
+    });
+    const data = (await response.json()) as { settings?: BookingSettings; error?: string };
+    if (!response.ok || !data.settings) {
+      setMessage(data.error || "Randevu durumu kaydedilemedi.");
+    } else {
+      setBookingSettings(data.settings);
+      setMessage(nextEnabled ? "Online randevu hizmeti açıldı." : "Online randevu hizmeti kapatıldı.");
+    }
     setSavingId("");
   }
 
@@ -289,6 +336,30 @@ export function AdminPanel() {
       </header>
 
       <section className="admin-content">
+        <section className={`admin-booking-switch ${bookingSettings.bookingEnabled ? "is-open" : "is-closed"}`}>
+          <div>
+            <p className="eyebrow">RANDEVU HİZMETİ</p>
+            <div className="admin-booking-heading">
+              <h2>Online randevu</h2>
+              <span>{bookingSettings.bookingEnabled ? "Açık" : "Kapalı"}</span>
+            </div>
+            <p>
+              {bookingSettings.bookingEnabled
+                ? "Müşteriler internetten randevu oluşturabilir."
+                : `Müşteriler ${bookingSettings.phoneDisplay} numarasına yönlendiriliyor.`}
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={!bookingSettingsLoaded || savingId === "booking-settings"}
+            onClick={toggleBooking}
+          >
+            {savingId === "booking-settings"
+              ? "Kaydediliyor…"
+              : bookingSettings.bookingEnabled ? "Randevuyu kapat" : "Randevuyu aç"}
+          </button>
+        </section>
+
         <nav className="admin-tabs" aria-label="Yönetim bölümleri">
           <button className={activeTab === "services" ? "active" : ""} type="button" onClick={() => setActiveTab("services")}>Fiyatlar</button>
           {role === "superadmin" && <button className={activeTab === "users" ? "active" : ""} type="button" onClick={() => setActiveTab("users")}>Kullanıcılar</button>}

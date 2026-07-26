@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { sendAppointmentCreatedEmail } from "@/lib/appointment-email";
+import { readBookingSettings } from "@/lib/booking-settings";
 import { syncAppointmentToGoogle } from "@/lib/calendar-sync";
 import { getPublicSupabase } from "@/lib/supabase-server";
 
@@ -33,6 +34,18 @@ export async function POST(request: Request) {
 
   if (!isValid(input)) {
     return NextResponse.json({ error: "Lütfen bütün alanları doğru şekilde doldurun." }, { status: 422 });
+  }
+
+  const bookingSettings = await readBookingSettings();
+  if (!bookingSettings.bookingEnabled) {
+    return NextResponse.json(
+      {
+        error: `Randevu özelliğimiz şu an hizmet veremiyor. Lütfen ${bookingSettings.phoneDisplay} numarasından randevu alınız.`,
+        phoneDisplay: bookingSettings.phoneDisplay,
+        phoneHref: bookingSettings.phoneHref,
+      },
+      { status: 503 },
+    );
   }
 
   const supabase = getPublicSupabase();
