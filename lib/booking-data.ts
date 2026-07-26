@@ -33,9 +33,9 @@ export const services: Service[] = [
 ];
 
 export const staff: Staff[] = [
-  { id: "20000000-0000-4000-8000-000000000001", name: "Erdem Kaçan", title: "Senior Barber", initials: "EK", services: services.map((item) => item.id) },
+  { id: "20000000-0000-4000-8000-000000000001", name: "Erdem Kaçan", title: "Style Director", initials: "EK", services: services.map((item) => item.id) },
   { id: "20000000-0000-4000-8000-000000000002", name: "Emrah Ak", title: "Style Director", initials: "EA", services: services.filter((item) => item.category !== "solar").map((item) => item.id) },
-  { id: "20000000-0000-4000-8000-000000000003", name: "Yunus Taş", title: "Barber & Care", initials: "YT", services: services.map((item) => item.id) },
+  { id: "20000000-0000-4000-8000-000000000003", name: "Yunus Taş", title: "Style Director", initials: "YT", services: services.map((item) => item.id) },
 ];
 
 export const timeSlots = ["09:00", "09:45", "10:30", "11:15", "12:00", "13:30", "14:15", "15:00", "15:45", "16:30", "17:15", "18:00", "18:45"];

@@ -12,9 +12,9 @@ const featuredServices = [
 ];
 
 const team = [
-  { name: "Erdem Kaçan", role: "Senior Barber", initials: "EK", index: 1 },
+  { name: "Erdem Kaçan", role: "Style Director", initials: "EK", index: 1 },
   { name: "Emrah Ak", role: "Style Director", initials: "EA", index: 2 },
-  { name: "Yunus Taş", role: "Barber & Care", initials: "YT", index: 3 },
+  { name: "Yunus Taş", role: "Style Director", initials: "YT", index: 3 },
 ];
 
 function Arrow() {
