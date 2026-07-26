@@ -279,9 +279,11 @@ button { color: inherit; }
 .admin-login-card h1, .admin-title h1 { margin: 8px 0 12px; font-family: var(--font-playfair), serif; font-size: clamp(38px, 5vw, 62px); font-weight: 500; line-height: 1; }
 .admin-login-card > div > p:not(.eyebrow) { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
 .admin-login-form { display: grid; gap: 15px; }
-.admin-login-form label > span, .admin-fields label > span { display: block; margin-bottom: 6px; color: #656b66; font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-.admin-login-form input, .admin-fields input { width: 100%; padding: 13px 14px; outline: 0; color: var(--ink); border: 1px solid #cec5b5; background: white; font-size: 12px; }
-.admin-login-form input:focus, .admin-fields input:focus { border-color: #96723a; box-shadow: 0 0 0 3px rgba(150,114,58,.1); }
+.admin-login-form label > span, .admin-fields label > span, .admin-smtp-grid label > span { display: block; margin-bottom: 6px; color: #656b66; font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.admin-login-form input, .admin-fields input, .admin-smtp-grid input, .admin-smtp-grid select { width: 100%; padding: 13px 14px; outline: 0; color: var(--ink); border: 1px solid #cec5b5; background: white; font-size: 12px; }
+.admin-smtp-grid select { min-height: 44px; cursor: pointer; }
+.admin-smtp-grid select:disabled { cursor: default; opacity: 1; }
+.admin-login-form input:focus, .admin-fields input:focus, .admin-smtp-grid input:focus, .admin-smtp-grid select:focus { border-color: #96723a; box-shadow: 0 0 0 3px rgba(150,114,58,.1); }
 .admin-primary { min-width: 150px; padding: 13px 17px; color: white; border: 0; background: var(--ink-soft); cursor: pointer; font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
 .admin-primary:disabled { cursor: wait; opacity: .55; }
 .admin-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 25px; border-bottom: 1px solid rgba(16,31,26,.15); }
@@ -316,6 +318,14 @@ button { color: inherit; }
 .admin-tabs button { padding: 11px 15px; color: #666c67; border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
 .admin-tabs button.active { color: white; border-color: var(--ink-soft); background: var(--ink-soft); }
 .admin-create-user, .admin-email-card { margin-bottom: 22px; padding: 24px; background: #f8f4ec; border: 1px solid #d6ccbb; }
+.admin-smtp-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px 14px; }
+.admin-smtp-grid > label { grid-column: span 4; }
+.admin-smtp-grid > .admin-smtp-host { grid-column: span 8; }
+.admin-smtp-grid > .admin-smtp-half { grid-column: span 6; }
+.admin-email-hint { margin: 25px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.admin-email-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 34px; padding-top: 20px; border-top: 1px solid #ddd4c5; }
+.admin-secondary { min-width: 150px; padding: 12px 17px; color: var(--ink); border: 1px solid #bfb4a2; background: transparent; cursor: pointer; font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+.admin-secondary:disabled { cursor: wait; opacity: .55; }
 .admin-create-user h2 { margin: 0 0 18px; font-family: var(--font-playfair), serif; font-size: 25px; font-weight: 500; }
 .admin-user-list { display: grid; gap: 14px; }
 .admin-user-card { padding: 22px; background: #f8f4ec; border: 1px solid #d6ccbb; }
@@ -419,6 +429,10 @@ button { color: inherit; }
   .admin-tabs { overflow-x: auto; }
   .admin-fields { grid-template-columns: 1fr; }
   .admin-fields .admin-wide { grid-column: auto; }
+  .admin-smtp-grid { grid-template-columns: 1fr; }
+  .admin-smtp-grid > label, .admin-smtp-grid > .admin-smtp-host, .admin-smtp-grid > .admin-smtp-half { grid-column: auto; }
+  .admin-email-actions { align-items: stretch; flex-direction: column-reverse; }
+  .admin-email-actions button { width: 100%; }
   .admin-service-card { padding: 18px; }
   .admin-save-row { align-items: flex-end; flex-direction: column; gap: 10px; }
 }

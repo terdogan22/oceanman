@@ -1,4 +1,4 @@
-import { decryptSecret } from "@/lib/secret-crypto";
+import { loadStoredSmtpSettings, sendSmtpEmail } from "@/lib/smtp-mail";
 import { getAdminSupabase } from "@/lib/supabase-admin";
 
 type AppointmentDetails = {
@@ -10,13 +10,6 @@ type AppointmentDetails = {
   startAt: string;
   serviceName: string;
   staffName: string;
-};
-
-type DeliverySettings = {
-  apiKey: string;
-  from: string;
-  replyTo: string;
-  notificationEmail: string;
 };
 
 function escapeHtml(value: string) {
@@ -38,48 +31,6 @@ function formattedDate(value: string) {
     dateStyle: "full",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-async function loadDeliverySettings(): Promise<DeliverySettings | null> {
-  const fallbackApiKey = process.env.RESEND_API_KEY ?? "";
-  const fallbackFrom = process.env.EMAIL_FROM ?? "";
-  const fallbackReplyTo = process.env.EMAIL_REPLY_TO ?? "";
-  const fallbackNotification = process.env.BUSINESS_NOTIFICATION_EMAIL ?? "";
-  const supabase = getAdminSupabase();
-
-  if (!supabase) {
-    return fallbackApiKey && fallbackFrom
-      ? { apiKey: fallbackApiKey, from: fallbackFrom, replyTo: fallbackReplyTo, notificationEmail: fallbackNotification }
-      : null;
-  }
-
-  const { data } = await supabase
-    .from("email_settings")
-    .select("from_name, from_email, reply_to, notification_email, api_key_encrypted")
-    .eq("singleton", true)
-    .maybeSingle();
-
-  let databaseApiKey = "";
-  if (data?.api_key_encrypted) {
-    try {
-      databaseApiKey = decryptSecret(data.api_key_encrypted);
-    } catch {
-      databaseApiKey = "";
-    }
-  }
-
-  const apiKey = databaseApiKey || fallbackApiKey;
-  const fromEmail = String(data?.from_email || "").trim();
-  const fromName = String(data?.from_name || "Oceanman Edirne").trim();
-  const from = fromEmail ? `${fromName} <${fromEmail}>` : fallbackFrom;
-  if (!apiKey || !from) return null;
-
-  return {
-    apiKey,
-    from,
-    replyTo: String(data?.reply_to || fallbackReplyTo || ""),
-    notificationEmail: String(data?.notification_email || fallbackNotification || ""),
-  };
 }
 
 async function loadAppointment(appointmentId: string): Promise<AppointmentDetails | null> {
@@ -119,30 +70,15 @@ async function sendEmail(input: {
   text: string;
   event: "created" | "cancelled";
 }) {
-  const settings = await loadDeliverySettings();
+  const settings = await loadStoredSmtpSettings();
   if (!settings) return false;
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${settings.apiKey}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": `oceanman-${input.event}-${input.appointmentId}`,
-      "User-Agent": "Oceanman-Booking/1.0",
-    },
-    body: JSON.stringify({
-      from: settings.from,
-      to: [input.to],
-      ...(settings.replyTo ? { reply_to: settings.replyTo } : {}),
-      ...(settings.notificationEmail ? { bcc: [settings.notificationEmail] } : {}),
-      subject: input.subject,
-      html: input.html,
-      text: input.text,
-      tags: [{ name: "appointment_event", value: input.event }],
-    }),
+  return sendSmtpEmail(settings, {
+    to: input.to,
+    subject: input.subject,
+    html: input.html,
+    text: input.text,
   });
-
-  return response.ok;
 }
 
 function emailFrame(content: string) {

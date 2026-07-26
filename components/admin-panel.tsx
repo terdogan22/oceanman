@@ -28,14 +28,15 @@ type AdminUser = {
 };
 
 type EmailSettings = {
-  provider: "resend";
+  provider: "smtp";
   fromName: string;
   fromEmail: string;
-  replyTo: string;
-  notificationEmail: string;
-  apiKeyConfigured: boolean;
-  apiKey: string;
-  clearApiKey: boolean;
+  smtpHost: string;
+  smtpPort: number;
+  smtpSecurity: "starttls" | "tls" | "none";
+  smtpUsername: string;
+  smtpPasswordConfigured: boolean;
+  smtpPassword: string;
 };
 
 type ServicesResponse = {
@@ -51,14 +52,15 @@ type BookingSettings = {
 };
 
 const emptyEmailSettings: EmailSettings = {
-  provider: "resend",
+  provider: "smtp",
   fromName: "Oceanman Edirne",
   fromEmail: "",
-  replyTo: "",
-  notificationEmail: "",
-  apiKeyConfigured: false,
-  apiKey: "",
-  clearApiKey: false,
+  smtpHost: "",
+  smtpPort: 587,
+  smtpSecurity: "starttls",
+  smtpUsername: "",
+  smtpPasswordConfigured: false,
+  smtpPassword: "",
 };
 
 export function AdminPanel() {
@@ -175,9 +177,9 @@ export function AdminPanel() {
     if (!currentSession) return;
     setLoading(true);
     const response = await fetch("/api/admin/email-settings", { headers: authHeaders(currentSession) });
-    const data = (await response.json()) as { settings?: Omit<EmailSettings, "apiKey" | "clearApiKey">; error?: string };
+    const data = (await response.json()) as { settings?: Omit<EmailSettings, "smtpPassword">; error?: string };
     if (!response.ok) setMessage(data.error || "E-posta ayarları alınamadı.");
-    else if (data.settings) setEmailSettings({ ...data.settings, apiKey: "", clearApiKey: false });
+    else if (data.settings) setEmailSettings({ ...data.settings, smtpPassword: "" });
     setLoading(false);
   }
 
@@ -289,17 +291,30 @@ export function AdminPanel() {
       headers: { ...authHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify(emailSettings),
     });
-    const data = (await response.json()) as { error?: string; apiKeyConfigured?: boolean };
-    if (!response.ok) setMessage(data.error || "E-posta ayarları kaydedilemedi.");
+    const data = (await response.json()) as { error?: string; smtpPasswordConfigured?: boolean };
+    if (!response.ok) setMessage(data.error || "SMTP ayarları kaydedilemedi.");
     else {
       setEmailSettings((current) => ({
         ...current,
-        apiKey: "",
-        clearApiKey: false,
-        apiKeyConfigured: data.apiKeyConfigured ?? current.apiKeyConfigured,
+        smtpPassword: "",
+        smtpPasswordConfigured: data.smtpPasswordConfigured ?? current.smtpPasswordConfigured,
       }));
-      setMessage("E-posta ayarları kaydedildi.");
+      setMessage("SMTP ayarları kaydedildi.");
     }
+    setSavingId("");
+  }
+
+  async function testEmailSettings() {
+    if (!session) return;
+    setSavingId("email-test");
+    setMessage("");
+    const response = await fetch("/api/admin/email-settings/test", {
+      method: "POST",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify(emailSettings),
+    });
+    const data = (await response.json()) as { error?: string; message?: string };
+    setMessage(response.ok ? data.message || "Test e-postası gönderildi." : data.error || "Test e-postası gönderilemedi.");
     setSavingId("");
   }
 
@@ -436,18 +451,24 @@ export function AdminPanel() {
           <>
             <div className="admin-title">
               <div><p className="eyebrow">SUPERADMIN</p><h1>E-posta sistemi</h1></div>
-              <p>Randevu ve iptal e-postaları bu bilgilerle gönderilir. API anahtarı şifreli saklanır.</p>
+              <p>Randevu ve iptal e-postaları bu SMTP hesabıyla gönderilir. SMTP şifresi güvenli biçimde şifrelenir.</p>
             </div>
             <form className="admin-email-card" onSubmit={saveEmailSettings}>
-              <div className="admin-fields">
-                <label><span>Gönderen adı</span><input required value={emailSettings.fromName} onChange={(event) => setEmailSettings({ ...emailSettings, fromName: event.target.value })} /></label>
+              <div className="admin-smtp-grid">
+                <label><span>Gönderim yöntemi</span><select disabled value={emailSettings.provider}><option value="smtp">SMTP</option></select></label>
                 <label><span>Gönderen e-posta</span><input required type="email" value={emailSettings.fromEmail} onChange={(event) => setEmailSettings({ ...emailSettings, fromEmail: event.target.value })} /></label>
-                <label><span>Yanıt adresi</span><input type="email" value={emailSettings.replyTo} onChange={(event) => setEmailSettings({ ...emailSettings, replyTo: event.target.value })} /></label>
-                <label><span>İşletme bildirim adresi</span><input type="email" value={emailSettings.notificationEmail} onChange={(event) => setEmailSettings({ ...emailSettings, notificationEmail: event.target.value })} /></label>
-                <label className="admin-wide"><span>Resend API anahtarı {emailSettings.apiKeyConfigured ? "· kayıtlı" : "· kayıtlı değil"}</span><input type="password" placeholder={emailSettings.apiKeyConfigured ? "Değiştirmek için yeni anahtarı yazın" : "re_..."} value={emailSettings.apiKey} onChange={(event) => setEmailSettings({ ...emailSettings, apiKey: event.target.value, clearApiKey: false })} /></label>
+                <label><span>Gönderen adı</span><input required value={emailSettings.fromName} onChange={(event) => setEmailSettings({ ...emailSettings, fromName: event.target.value })} /></label>
+                <label className="admin-smtp-host"><span>SMTP sunucu</span><input required value={emailSettings.smtpHost} onChange={(event) => setEmailSettings({ ...emailSettings, smtpHost: event.target.value })} placeholder="smtp.ornek.com" /></label>
+                <label><span>Port</span><input required min="1" max="65535" type="number" value={emailSettings.smtpPort} onChange={(event) => setEmailSettings({ ...emailSettings, smtpPort: Number(event.target.value) })} /></label>
+                <label><span>Güvenlik</span><select value={emailSettings.smtpSecurity} onChange={(event) => setEmailSettings({ ...emailSettings, smtpSecurity: event.target.value as EmailSettings["smtpSecurity"] })}><option value="starttls">TLS / STARTTLS</option><option value="tls">SSL / TLS</option><option value="none">Yok</option></select></label>
+                <label className="admin-smtp-half"><span>SMTP kullanıcı adı</span><input required autoComplete="username" value={emailSettings.smtpUsername} onChange={(event) => setEmailSettings({ ...emailSettings, smtpUsername: event.target.value })} /></label>
+                <label className="admin-smtp-half"><span>SMTP şifresi</span><input type="password" autoComplete="new-password" placeholder={emailSettings.smtpPasswordConfigured ? "Mevcut şifre korunur" : "SMTP şifresini girin"} value={emailSettings.smtpPassword} onChange={(event) => setEmailSettings({ ...emailSettings, smtpPassword: event.target.value })} /></label>
               </div>
-              {emailSettings.apiKeyConfigured && <label className="admin-active admin-clear-key"><input type="checkbox" checked={emailSettings.clearApiKey} onChange={(event) => setEmailSettings({ ...emailSettings, clearApiKey: event.target.checked, apiKey: "" })} /> Kayıtlı API anahtarını kaldır</label>}
-              <div className="admin-save-row"><span>Gönderim servisi: Resend</span><button className="admin-primary" disabled={savingId === "email"} type="submit">E-posta ayarlarını kaydet</button></div>
+              <p className="admin-email-hint">Spam riskini azaltmak için e-postalar yalnızca işletmenin alan adına ait SMTP hesabıyla gönderilmelidir.</p>
+              <div className="admin-email-actions">
+                <button className="admin-secondary" disabled={savingId === "email-test" || savingId === "email"} type="button" onClick={testEmailSettings}>{savingId === "email-test" ? "Gönderiliyor…" : "Test e-postası"}</button>
+                <button className="admin-primary" disabled={savingId === "email" || savingId === "email-test"} type="submit">{savingId === "email" ? "Kaydediliyor…" : "Ayarları kaydet"}</button>
+              </div>
             </form>
           </>
         )}
