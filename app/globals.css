@@ -279,6 +279,8 @@ button { color: inherit; }
 .admin-login-card h1, .admin-title h1 { margin: 8px 0 12px; font-family: var(--font-playfair), serif; font-size: clamp(38px, 5vw, 62px); font-weight: 500; line-height: 1; }
 .admin-login-card > div > p:not(.eyebrow) { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
 .admin-login-form { display: grid; gap: 15px; }
+.admin-password-card { margin-top: 4vh; }
+.admin-password-hint { margin: -2px 0 2px; color: var(--muted); font-size: 10px; line-height: 1.6; }
 .admin-login-form label > span, .admin-fields label > span, .admin-smtp-grid label > span { display: block; margin-bottom: 6px; color: #656b66; font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
 .admin-login-form input, .admin-fields input, .admin-smtp-grid input, .admin-smtp-grid select { width: 100%; padding: 13px 14px; outline: 0; color: var(--ink); border: 1px solid #cec5b5; background: white; font-size: 12px; }
 .admin-smtp-grid select { min-height: 44px; cursor: pointer; }
@@ -333,6 +335,7 @@ button { color: inherit; }
 .admin-user-role strong { font-size: 12px; }
 .admin-user-role span { color: #896932; font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
 .admin-user-active { align-self: end; min-height: 42px; }
+.admin-user-actions > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
 .admin-clear-key { margin: 8px 0 20px; }
 
 @media (max-width: 1050px) {

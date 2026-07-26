@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { authenticateAdmin, requireSuperadmin } from "@/lib/admin-auth";
+import { sendAdminInvitationEmail } from "@/lib/admin-email";
 import { getAdminSupabase } from "@/lib/supabase-admin";
 
 type CreateUserInput = {
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
 
   const [{ data: authData, error: authError }, { data: rows, error: rowsError }] = await Promise.all([
     supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-    supabase.from("admin_users").select("user_id, display_name, role, active, created_at").order("created_at"),
+    supabase.from("admin_users").select("user_id, display_name, role, active, must_change_password, created_at").order("created_at"),
   ]);
 
   if (authError || rowsError) return NextResponse.json({ error: "Kullanıcılar alınamadı." }, { status: 500 });
@@ -48,6 +49,7 @@ export async function GET(request: Request) {
     displayName: row.display_name,
     role: row.role,
     active: row.active,
+    mustChangePassword: Boolean(row.must_change_password),
     createdAt: row.created_at,
   }));
 
@@ -58,6 +60,7 @@ export async function GET(request: Request) {
       displayName: access.admin.displayName,
       role: "superadmin",
       active: true,
+      mustChangePassword: false,
       createdAt: "",
     });
   }
@@ -95,6 +98,7 @@ export async function POST(request: Request) {
     display_name: displayName,
     role: "manager",
     active: true,
+    must_change_password: true,
     created_by: access.admin?.userId,
   });
 
@@ -103,7 +107,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Kullanıcı yetkisi kaydedilemedi." }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, userId: created.user.id });
+  const delivery = await sendAdminInvitationEmail({
+    to: email,
+    displayName,
+    temporaryPassword: password,
+  });
+
+  return NextResponse.json({
+    ok: true,
+    userId: created.user.id,
+    emailSent: delivery.sent,
+    message: delivery.sent
+      ? "Kullanıcı oluşturuldu ve giriş bilgileri e-postayla gönderildi."
+      : `Kullanıcı oluşturuldu ancak e-posta gönderilemedi: ${delivery.reason}`,
+  });
 }
 
 export async function PATCH(request: Request) {

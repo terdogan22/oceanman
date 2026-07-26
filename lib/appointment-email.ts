@@ -1,5 +1,6 @@
 import { loadStoredSmtpSettings, sendSmtpEmail } from "@/lib/smtp-mail";
 import { getAdminSupabase } from "@/lib/supabase-admin";
+import { escapeEmailHtml as escapeHtml, oceanmanEmailFrame } from "@/lib/email-template";
 
 type AppointmentDetails = {
   id: string;
@@ -11,15 +12,6 @@ type AppointmentDetails = {
   serviceName: string;
   staffName: string;
 };
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 
 function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || "https://oceanman.vercel.app").replace(/\/+$/, "");
@@ -81,22 +73,6 @@ async function sendEmail(input: {
   });
 }
 
-function emailFrame(content: string) {
-  return `
-    <div style="margin:0;padding:32px 16px;background:#eef0eb;font-family:Arial,sans-serif;color:#10201b">
-      <div style="max-width:620px;margin:0 auto;background:#fffaf0;border:1px solid #ded4c1">
-        <div style="padding:24px 28px;background:#10201b;color:#f2d28c">
-          <strong style="font-size:22px;letter-spacing:2px">OCEAN MAN</strong>
-          <div style="margin-top:5px;font-size:10px;letter-spacing:2px;color:#c5c8c5">YENİ NESİL BERBER · EDİRNE</div>
-        </div>
-        <div style="padding:30px 28px">${content}</div>
-        <div style="padding:18px 28px;background:#eee7da;color:#6d716d;font-size:12px">
-          Şükrüpaşa · Edirne · 0 540 236 00 66
-        </div>
-      </div>
-    </div>`;
-}
-
 export async function sendAppointmentCreatedEmail(
   appointmentId: string,
   cancellationToken: string,
@@ -108,7 +84,7 @@ export async function sendAppointmentCreatedEmail(
   const cancelUrl = `${siteUrl()}/randevu/iptal?token=${encodeURIComponent(cancellationToken)}`;
   const date = formattedDate(appointment.startAt);
   const name = `${appointment.firstName} ${appointment.lastName}`;
-  const html = emailFrame(`
+  const html = oceanmanEmailFrame(`
     <p style="margin:0 0 8px;color:#92713a;font-size:12px;font-weight:bold;letter-spacing:1px">RANDEVUNUZ ONAYLANDI</p>
     <h1 style="margin:0 0 20px;font-size:30px">Görüşmek üzere, ${escapeHtml(appointment.firstName)}.</h1>
     <table style="width:100%;border-collapse:collapse;font-size:14px">
@@ -144,7 +120,7 @@ export async function sendAppointmentCancelledEmail(appointmentId: string) {
   if (!appointment) return false;
 
   const date = formattedDate(appointment.startAt);
-  const html = emailFrame(`
+  const html = oceanmanEmailFrame(`
     <p style="margin:0 0 8px;color:#87483c;font-size:12px;font-weight:bold;letter-spacing:1px">RANDEVU İPTALİ</p>
     <h1 style="margin:0 0 18px;font-size:30px">Randevunuz iptal edildi.</h1>
     <p style="margin:0 0 22px;color:#626762;line-height:1.6">Merhaba ${escapeHtml(appointment.firstName)}, aşağıdaki randevunuz başarıyla iptal edildi.</p>

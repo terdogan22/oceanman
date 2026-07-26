@@ -24,6 +24,7 @@ type AdminUser = {
   displayName: string;
   role: AdminRole;
   active: boolean;
+  mustChangePassword: boolean;
   newPassword?: string;
 };
 
@@ -41,7 +42,7 @@ type EmailSettings = {
 
 type ServicesResponse = {
   services?: AdminService[];
-  admin?: { displayName: string; email: string; role: AdminRole };
+  admin?: { displayName: string; email: string; role: AdminRole; mustChangePassword: boolean };
   error?: string;
 };
 
@@ -78,6 +79,8 @@ export function AdminPanel() {
   const [emailSettings, setEmailSettings] = useState<EmailSettings>(emptyEmailSettings);
   const [adminName, setAdminName] = useState("");
   const [role, setRole] = useState<AdminRole>("manager");
+  const [mustChangePassword, setMustChangePassword] = useState<boolean | null>(null);
+  const [passwordChange, setPasswordChange] = useState({ password: "", confirm: "" });
   const [activeTab, setActiveTab] = useState<AdminTab>("services");
   const [loading, setLoading] = useState(Boolean(supabase));
   const [savingId, setSavingId] = useState("");
@@ -105,6 +108,7 @@ export function AdminPanel() {
         setServices([]);
         setUsers([]);
         setAdminName("");
+        setMustChangePassword(null);
         setActiveTab("services");
       }
     });
@@ -114,22 +118,51 @@ export function AdminPanel() {
 
   useEffect(() => {
     if (!session) return;
-    loadServices(session);
-    loadBookingSettings(session);
-    // loadServices intentionally runs only when the authenticated session changes.
+    loadAdminSession(session);
+    // Session bootstrap intentionally runs only when the authenticated session changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   useEffect(() => {
-    if (!session || role !== "superadmin") return;
+    if (!session || mustChangePassword !== false || role !== "superadmin") return;
     if (activeTab === "users" && users.length === 0) loadUsers(session);
     if (activeTab === "email" && !emailSettings.fromEmail) loadEmailSettings(session);
     // The loaders are stable for the current session and are gated by tab state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, emailSettings.fromEmail, role, session, users.length]);
+  }, [activeTab, emailSettings.fromEmail, mustChangePassword, role, session, users.length]);
 
   function authHeaders(currentSession = session): Record<string, string> {
     return currentSession ? { Authorization: `Bearer ${currentSession.access_token}` } : {};
+  }
+
+  async function loadAdminSession(currentSession: Session) {
+    setLoading(true);
+    setMessage("");
+    const response = await fetch("/api/admin/session", {
+      cache: "no-store",
+      headers: authHeaders(currentSession),
+    });
+    const data = (await response.json()) as {
+      admin?: { displayName: string; email: string; role: AdminRole; mustChangePassword: boolean };
+      error?: string;
+    };
+    if (!response.ok || !data.admin) {
+      setMessage(data.error || "Yönetim hesabı doğrulanamadı.");
+      setMustChangePassword(null);
+      setLoading(false);
+      return;
+    }
+
+    setAdminName(data.admin.displayName || data.admin.email || "Yönetici");
+    setRole(data.admin.role);
+    setMustChangePassword(data.admin.mustChangePassword);
+    if (data.admin.mustChangePassword) {
+      setLoading(false);
+      return;
+    }
+
+    await Promise.all([loadServices(currentSession), loadBookingSettings(currentSession)]);
+    setLoading(false);
   }
 
   async function loadServices(currentSession: Session) {
@@ -249,12 +282,12 @@ export function AdminPanel() {
       headers: { ...authHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify(newUser),
     });
-    const data = (await response.json()) as { error?: string };
+    const data = (await response.json()) as { error?: string; message?: string; emailSent?: boolean };
     if (!response.ok) setMessage(data.error || "Kullanıcı oluşturulamadı.");
     else {
       setNewUser({ displayName: "", email: "", password: "" });
       await loadUsers();
-      setMessage("Kullanıcı oluşturuldu.");
+      setMessage(data.message || "Kullanıcı oluşturuldu ve giriş bilgileri e-postayla gönderildi.");
     }
     setSavingId("");
   }
@@ -278,6 +311,59 @@ export function AdminPanel() {
       changeUser(user.userId, "newPassword", "");
       setSavedId(user.userId);
     }
+    setSavingId("");
+  }
+
+  async function sendUserInvitation(user: AdminUser) {
+    if (!session || user.role === "superadmin") return;
+    const actionId = `invite-${user.userId}`;
+    setSavingId(actionId);
+    setMessage("");
+    const response = await fetch("/api/admin/users/invite", {
+      method: "POST",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.userId }),
+    });
+    const data = (await response.json()) as { error?: string; message?: string };
+    if (!response.ok) {
+      setMessage(data.error || "Giriş bilgileri gönderilemedi.");
+    } else {
+      await loadUsers();
+      setMessage(data.message || "Yeni giriş bilgileri e-postayla gönderildi.");
+    }
+    setSavingId("");
+  }
+
+  async function changeFirstPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!session) return;
+    if (passwordChange.password.length < 10) {
+      setMessage("Yeni şifre en az 10 karakter olmalıdır.");
+      return;
+    }
+    if (passwordChange.password !== passwordChange.confirm) {
+      setMessage("Yeni şifreler birbiriyle aynı değil.");
+      return;
+    }
+
+    setSavingId("first-password");
+    setMessage("");
+    const response = await fetch("/api/admin/change-password", {
+      method: "POST",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ password: passwordChange.password }),
+    });
+    const data = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(data.error || "Yeni şifre kaydedilemedi.");
+      setSavingId("");
+      return;
+    }
+
+    setPassword("");
+    setPasswordChange({ password: "", confirm: "" });
+    await supabase?.auth.signOut({ scope: "local" });
+    setMessage("Şifreniz değiştirildi. Şimdi yeni şifrenizle giriş yapabilirsiniz.");
     setSavingId("");
   }
 
@@ -335,8 +421,35 @@ export function AdminPanel() {
           <form className="admin-login-form" onSubmit={signIn}>
             <label><span>E-posta</span><input required type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
             <label><span>Şifre</span><input required type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-            {message && <p className="admin-message admin-error" role="alert">{message}</p>}
+            {message && <p className={`admin-message ${message.includes("değiştirildi") ? "" : "admin-error"}`} role="alert">{message}</p>}
             <button className="admin-primary" disabled={loading} type="submit">{loading ? "Giriş yapılıyor…" : "Giriş yap"}</button>
+          </form>
+        </section>
+      </main>
+    );
+  }
+
+  if (mustChangePassword === null) {
+    return <main className="admin-shell"><p className="admin-loading">{message || "Hesabınız doğrulanıyor…"}</p></main>;
+  }
+
+  if (mustChangePassword) {
+    return (
+      <main className="admin-shell">
+        <section className="admin-login-card admin-password-card">
+          <SiteLogo />
+          <div>
+            <p className="eyebrow">İLK GİRİŞ GÜVENLİĞİ</p>
+            <h1>Yeni şifrenizi belirleyin</h1>
+            <p>{adminName || session.user.email}, yönetim paneline devam etmek için geçici şifrenizi değiştirmeniz gerekiyor.</p>
+          </div>
+          <form className="admin-login-form" onSubmit={changeFirstPassword}>
+            <label><span>Yeni şifre</span><input required minLength={10} type="password" autoComplete="new-password" value={passwordChange.password} onChange={(event) => setPasswordChange({ ...passwordChange, password: event.target.value })} /></label>
+            <label><span>Yeni şifre tekrar</span><input required minLength={10} type="password" autoComplete="new-password" value={passwordChange.confirm} onChange={(event) => setPasswordChange({ ...passwordChange, confirm: event.target.value })} /></label>
+            <p className="admin-password-hint">En az 10 karakter kullanın. Harf, sayı ve özel karakterleri birlikte kullanmanızı öneririz.</p>
+            {message && <p className="admin-message admin-error" role="alert">{message}</p>}
+            <button className="admin-primary" disabled={savingId === "first-password"} type="submit">{savingId === "first-password" ? "Şifre kaydediliyor…" : "Şifremi değiştir ve devam et"}</button>
+            <button className="admin-secondary" type="button" onClick={signOut}>Başka hesapla giriş yap</button>
           </form>
         </section>
       </main>
@@ -434,13 +547,28 @@ export function AdminPanel() {
             <div className="admin-user-list">
               {users.map((user) => (
                 <article className="admin-user-card" key={user.userId}>
-                  <div className="admin-user-role"><strong>{user.email}</strong><span>{user.role === "superadmin" ? "Superadmin" : "Yetkili"}</span></div>
+                  <div className="admin-user-role">
+                    <strong>{user.email}</strong>
+                    <span>{user.role === "superadmin" ? "Superadmin" : user.mustChangePassword ? "İlk giriş bekleniyor" : "Yetkili"}</span>
+                  </div>
                   <div className="admin-fields">
                     <label><span>Ad soyad</span><input disabled={user.role === "superadmin"} value={user.displayName} onChange={(event) => changeUser(user.userId, "displayName", event.target.value)} /></label>
                     <label><span>Yeni şifre (isteğe bağlı)</span><input disabled={user.role === "superadmin"} minLength={8} type="password" value={user.newPassword ?? ""} onChange={(event) => changeUser(user.userId, "newPassword", event.target.value)} /></label>
                     <label className="admin-active admin-user-active"><input disabled={user.role === "superadmin"} type="checkbox" checked={user.active} onChange={(event) => changeUser(user.userId, "active", event.target.checked)} /> Hesap aktif</label>
                   </div>
-                  {user.role !== "superadmin" && <div className="admin-save-row"><span>{savedId === user.userId ? "Kaydedildi ✓" : ""}</span><button className="admin-primary" disabled={savingId === user.userId} type="button" onClick={() => saveUser(user)}>Kullanıcıyı kaydet</button></div>}
+                  {user.role !== "superadmin" && (
+                    <div className="admin-save-row admin-user-actions">
+                      <span>{savedId === user.userId ? "Kaydedildi ✓" : ""}</span>
+                      <div>
+                        <button className="admin-secondary" disabled={Boolean(savingId)} type="button" onClick={() => sendUserInvitation(user)}>
+                          {savingId === `invite-${user.userId}` ? "Gönderiliyor…" : "Giriş bilgilerini gönder"}
+                        </button>
+                        <button className="admin-primary" disabled={Boolean(savingId)} type="button" onClick={() => saveUser(user)}>
+                          {savingId === user.userId ? "Kaydediliyor…" : "Kullanıcıyı kaydet"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
