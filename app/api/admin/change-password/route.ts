@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { authenticateAdmin } from "@/lib/admin-auth";
 import { getAdminSupabase } from "@/lib/supabase-admin";
+import { sendAdminPasswordChangedEmail } from "@/lib/admin-email";
 
 type ChangePasswordInput = {
   password?: string;
@@ -39,5 +40,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Şifre değişikliği tamamlanamadı." }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  const emailSent = await sendAdminPasswordChangedEmail({
+    to: auth.admin.email,
+    displayName: auth.admin.displayName,
+  });
+  return NextResponse.json({ ok: true, emailSent });
 }

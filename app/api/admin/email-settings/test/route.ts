@@ -3,6 +3,7 @@ import { authenticateAdmin, requireSuperadmin } from "@/lib/admin-auth";
 import { decryptSecret } from "@/lib/secret-crypto";
 import { sendSmtpEmail, type SmtpSecurity, type SmtpSettings } from "@/lib/smtp-mail";
 import { getAdminSupabase } from "@/lib/supabase-admin";
+import { oceanmanEmailFrame } from "@/lib/email-template";
 
 type TestInput = {
   fromName?: string;
@@ -64,14 +65,23 @@ export async function POST(request: Request) {
 
   try {
     const sent = await sendSmtpEmail(settings, {
-      to: settings.fromEmail,
+      to: auth.admin.email,
       subject: "Oceanman SMTP test e-postası",
-      html: "<h2>Oceanman SMTP bağlantısı çalışıyor.</h2><p>Bu e-posta yönetim panelindeki test işlemiyle gönderildi.</p>",
+      html: oceanmanEmailFrame(`
+        <p style="margin:0 0 8px;color:#92713a;font-size:12px;font-weight:bold;letter-spacing:1px">E-POSTA SİSTEMİ</p>
+        <h1 style="margin:0 0 18px;font-size:30px;line-height:1.15">SMTP bağlantısı çalışıyor.</h1>
+        <p style="margin:0;color:#626762;font-size:14px;line-height:1.7">
+          Bu test mesajı Oceanman yönetim panelinden gönderildi. Randevu ve yönetim bildirimleri bu kurumsal şablonla iletilecek.
+        </p>
+        <div style="margin-top:22px;padding:16px;background:#eee7da;border-left:3px solid #92713a;color:#626762;font-size:13px;line-height:1.7">
+          Sunucu bağlantısı ve gönderici hesabı başarıyla doğrulandı.
+        </div>
+      `),
       text: "Oceanman SMTP bağlantısı çalışıyor. Bu e-posta yönetim panelindeki test işlemiyle gönderildi.",
     });
 
     if (!sent) return NextResponse.json({ error: "SMTP sunucusu e-postayı kabul etmedi." }, { status: 502 });
-    return NextResponse.json({ ok: true, message: `Test e-postası ${settings.fromEmail} adresine gönderildi.` });
+    return NextResponse.json({ ok: true, message: `Test e-postası ${auth.admin.email} adresine gönderildi.` });
   } catch {
     return NextResponse.json({ error: "SMTP bağlantısı kurulamadı. Sunucu, port, güvenlik ve giriş bilgilerini kontrol edin." }, { status: 502 });
   }

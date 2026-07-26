@@ -61,3 +61,40 @@ export async function sendAdminInvitationEmail(input: {
     return { sent: false as const, reason: "Davet e-postası gönderilemedi." };
   }
 }
+
+export async function sendAdminPasswordChangedEmail(input: {
+  to: string;
+  displayName: string;
+}) {
+  const settings = await loadStoredSmtpSettings();
+  if (!settings) return false;
+
+  const adminUrl = `${siteUrl()}/admin`;
+  const html = oceanmanEmailFrame(`
+    <p style="margin:0 0 8px;color:#92713a;font-size:12px;font-weight:bold;letter-spacing:1px">GÜVENLİK BİLDİRİMİ</p>
+    <h1 style="margin:0 0 18px;font-size:30px;line-height:1.15">Şifreniz değiştirildi.</h1>
+    <p style="margin:0 0 22px;color:#626762;font-size:14px;line-height:1.7">
+      Merhaba ${escapeEmailHtml(input.displayName)}, Oceanman yönetim hesabınızın şifresi başarıyla değiştirildi.
+    </p>
+    <div style="padding:16px;background:#eee7da;border-left:3px solid #92713a;color:#626762;font-size:13px;line-height:1.7">
+      Bu işlemi siz yapmadıysanız vakit kaybetmeden superadmin ile iletişime geçin.
+    </div>
+    <a href="${escapeEmailHtml(adminUrl)}" style="display:inline-block;margin-top:22px;padding:13px 19px;background:#10201b;color:#fff;text-decoration:none;font-size:12px;font-weight:bold;letter-spacing:.4px">YÖNETİM PANELİNE GİR</a>
+  `);
+
+  try {
+    return await sendSmtpEmail(settings, {
+      to: input.to,
+      subject: "Oceanman yönetim şifreniz değiştirildi",
+      html,
+      text: [
+        `Merhaba ${input.displayName},`,
+        "Oceanman yönetim hesabınızın şifresi başarıyla değiştirildi.",
+        "Bu işlemi siz yapmadıysanız vakit kaybetmeden superadmin ile iletişime geçin.",
+        `Yönetim paneli: ${adminUrl}`,
+      ].join("\n"),
+    });
+  } catch {
+    return false;
+  }
+}

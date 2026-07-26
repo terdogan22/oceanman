@@ -404,6 +404,19 @@ export function AdminPanel() {
     setSavingId("");
   }
 
+  async function sendEmailExamples() {
+    if (!session) return;
+    setSavingId("email-examples");
+    setMessage("");
+    const response = await fetch("/api/admin/email-settings/examples", {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    const data = (await response.json()) as { error?: string; message?: string };
+    setMessage(response.ok ? data.message || "Örnek e-postalar gönderildi." : data.error || "Örnek e-postalar gönderilemedi.");
+    setSavingId("");
+  }
+
   if (loading && !session) {
     return <main className="admin-shell"><p className="admin-loading">Yönetim paneli hazırlanıyor…</p></main>;
   }
@@ -594,6 +607,7 @@ export function AdminPanel() {
               </div>
               <p className="admin-email-hint">Spam riskini azaltmak için e-postalar yalnızca işletmenin alan adına ait SMTP hesabıyla gönderilmelidir.</p>
               <div className="admin-email-actions">
+                <button className="admin-secondary" disabled={Boolean(savingId)} type="button" onClick={sendEmailExamples}>{savingId === "email-examples" ? "Gönderiliyor…" : "4 örnek e-posta gönder"}</button>
                 <button className="admin-secondary" disabled={savingId === "email-test" || savingId === "email"} type="button" onClick={testEmailSettings}>{savingId === "email-test" ? "Gönderiliyor…" : "Test e-postası"}</button>
                 <button className="admin-primary" disabled={savingId === "email" || savingId === "email-test"} type="submit">{savingId === "email" ? "Kaydediliyor…" : "Ayarları kaydet"}</button>
               </div>
