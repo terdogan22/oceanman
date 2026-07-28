@@ -1,6 +1,0 @@
-update public.staff
-set title = 'Style Director'
-where id in (
-  '20000000-0000-4000-8000-000000000001',
-  '20000000-0000-4000-8000-000000000003'
-);

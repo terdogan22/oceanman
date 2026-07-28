@@ -1,2 +1,0 @@
--- Demo appointments are intentionally not seeded.
--- Services, staff and business hours are installed by the initial migration.
